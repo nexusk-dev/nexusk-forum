@@ -5,7 +5,14 @@ services:
     env: docker
     plan: free
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /
+    # 关键修改：使用 TCP 健康检查代替 HTTP 检查
+    healthCheck:
+      # 告诉 Render 只检查端口是否可监听即可
+      tcp: true
+      # 首次检查前的等待时间，给容器启动脚本留出时间
+      initialDelaySeconds: 60
+      # 检查的间隔时间
+      periodSeconds: 30
     envVars:
       - key: FORUM_URL
         value: https://nexusk-forum.onrender.com

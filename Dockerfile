@@ -1,4 +1,3 @@
-# 最终的、所有逻辑内联的 Dockerfile
 FROM mondedie/flarum:stable
 
 # 设置时区为中国
@@ -19,16 +18,17 @@ EXPOSE 8888
 CMD ["sh", "-c", " \
     set -e && \
     echo '=== NexusK Flarum 正在启动... ===' && \
+    echo \"数据库主机 (DB_HOST): ${DB_HOST}\" && \
     echo '正在等待数据库连接...' && \
-    timeout=60 && counter=0 && \
+    timeout=180 && counter=0 && \
     while ! nc -z \"${DB_HOST}\" 3306; do \
         counter=$((counter + 1)); \
         if [ ${counter} -ge ${timeout} ]; then \
-            echo '错误：数据库连接超时！'; \
+            echo '错误：数据库连接超时！请检查数据库状态和网络设置。'; \
             exit 1; \
         fi; \
-        echo '数据库尚未就绪，2秒后重试...'; \
-        sleep 2; \
+        echo '数据库尚未就绪，5秒后重试...'; \
+        sleep 5; \
     done && \
     echo '数据库连接成功！' && \
     if [ ! -f '/flarum/app/config.php' ]; then \
