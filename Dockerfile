@@ -12,7 +12,7 @@ WORKDIR /flarum/app
 # 暴露 Flarum 运行的端口
 EXPOSE 8888
 
-# 创建启动脚本 - 分步骤创建避免语法问题
+# 创建启动脚本
 RUN echo '#!/bin/sh' > /start.sh
 RUN echo 'set -e' >> /start.sh
 RUN echo 'DB_PORT=${DB_PORT:-3306}' >> /start.sh
@@ -33,7 +33,7 @@ RUN echo '    sleep 5' >> /start.sh
 RUN echo 'done' >> /start.sh
 RUN echo 'echo "数据库连接成功！"' >> /start.sh
 RUN echo 'if [ ! -f "/flarum/app/config.php" ]; then' >> /start.sh
-RUN echo '    echo "检测到首次运行，正在安装 Flarum..."' >> /start.sh
+RUN echo '    echo "创建配置文件..."' >> /start.sh
 RUN echo '    echo "<?php return [" > /flarum/app/config.php' >> /start.sh
 RUN echo '    echo "  \"debug\" => false," >> /flarum/app/config.php' >> /start.sh
 RUN echo '    echo "  \"database\" => [" >> /flarum/app/config.php' >> /start.sh
@@ -57,9 +57,26 @@ RUN echo '    echo "    \"admin\" => \"admin\"" >> /flarum/app/config.php' >> /s
 RUN echo '    echo "  ]" >> /flarum/app/config.php' >> /start.sh
 RUN echo '    echo "];" >> /flarum/app/config.php' >> /start.sh
 RUN echo '    echo "config.php 创建成功。"' >> /start.sh
-RUN echo '    php flarum migrate --force' >> /start.sh
-RUN echo '    php flarum install --defaults --admin-user="${FLARUM_ADMIN_USER}" --admin-pass="${FLARUM_ADMIN_PASS}" --admin-email="${FLARUM_ADMIN_MAIL}" --title="${FLARUM_TITLE}"' >> /start.sh
-RUN echo '    echo "Flarum 安装完成！"' >> /start.sh
+RUN echo 'fi' >> /start.sh
+RUN echo '# 如果数据库已经初始化，跳过迁移和安装' >> /start.sh
+RUN echo 'if ! php -r "try { $pdo = new PDO(\"mysql:host=${DB_HOST};port=${DB_PORT};dbname=${DB_NAME}\", \"${DB_USER}\", \"${DB_PASS}\"); $result = $pdo->query(\"SELECT COUNT(*) FROM flarum_users\"); if ($result && $result->fetchColumn() > 0) { echo \"existing\"; } else { echo \"new\"; } } catch (Exception \$e) { echo \"new\"; }" | grep -q "existing"; then' >> /start.sh
+RUN echo '    echo "检测到已存在的数据库，跳过初始化..."' >> /start.sh
+RUN echo 'else' >> /start.sh
+RUN echo '    echo "检测到新数据库，开始初始化..."' >> /start.sh
+RUN echo '    if php flarum migrate 2>/dev/null; then' >> /start.sh
+RUN echo '        echo "数据库迁移成功"' >> /start.sh
+RUN echo '    else' >> /start.sh
+RUN echo '        echo "数据库迁移失败或已完成"' >> /start.sh
+RUN echo '    fi' >> /start.sh
+RUN echo '    if [ -n "${FLARUM_ADMIN_USER}" ] && [ -n "${FLARUM_ADMIN_PASS}" ] && [ -n "${FLARUM_ADMIN_MAIL}" ]; then' >> /start.sh
+RUN echo '        if php flarum install --defaults --admin-user="${FLARUM_ADMIN_USER}" --admin-pass="${FLARUM_ADMIN_PASS}" --admin-email="${FLARUM_ADMIN_MAIL}" --title="${FLARUM_TITLE:-Flarum}" 2>/dev/null; then' >> /start.sh
+RUN echo '            echo "Flarum 安装完成！"' >> /start.sh
+RUN echo '        else' >> /start.sh
+RUN echo '            echo "Flarum 安装失败或已完成"' >> /start.sh
+RUN echo '        fi' >> /start.sh
+RUN echo '    else' >> /start.sh
+RUN echo '        echo "管理员信息不完整，跳过自动安装"' >> /start.sh
+RUN echo '    fi' >> /start.sh
 RUN echo 'fi' >> /start.sh
 RUN echo 'echo "正在清理缓存..."' >> /start.sh
 RUN echo 'php flarum cache:clear' >> /start.sh
