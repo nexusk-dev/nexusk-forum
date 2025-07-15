@@ -4,10 +4,6 @@ services:
     env: docker
     plan: free
     dockerfilePath: ./Dockerfile
-    healthCheck:
-      tcp: true
-      initialDelaySeconds: 60
-      periodSeconds: 30
     envVars:
       - key: FORUM_URL
         value: https://nexusk-forum.onrender.com
@@ -44,4 +40,4 @@ databases:
     databaseName: nexusk
     plan: free
     # 添加这一行来指定使用 MySQL 8
-    databaseEngine: MYSQL_8
+    engine: mysql
