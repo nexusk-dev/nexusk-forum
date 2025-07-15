@@ -28,7 +28,7 @@ services:
       - key: FLARUM_ADMIN_USER
         value: admin
       - key: FLARUM_ADMIN_PASS
-        value: nexusk2024
+        value: nexusk2025
       - key: FLARUM_ADMIN_MAIL
         value: admin@nexusk.com
       - key: FLARUM_TITLE
