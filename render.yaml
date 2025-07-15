@@ -2,42 +2,27 @@ services:
   - type: web
     name: nexusk-forum
     env: docker
+    # 您的 Web 服务可以继续使用免费计划
     plan: free
     dockerfilePath: ./Dockerfile
-    envVars:
-      - key: FORUM_URL
-        value: https://nexusk-forum.onrender.com
-      - key: DB_HOST
-        fromDatabase:
-          name: nexusk-database
-          property: host
-      - key: DB_NAME
-        fromDatabase:
-          name: nexusk-database
-          property: database
-      - key: DB_USER
-        fromDatabase:
-          name: nexusk-database
-          property: user
-      - key: DB_PASS
-        fromDatabase:
-          name: nexusk-database
-          property: password
-      - key: FLARUM_ADMIN_USER
-        value: admin
-      - key: FLARUM_ADMIN_PASS
-        value: nexusk2025
-      - key: FLARUM_ADMIN_MAIL
-        value: admin@nexusk.com
-      - key: FLARUM_TITLE
-        value: NexusK 服务器论坛
-      - key: TZ
-        value: Asia/Shanghai
+    healthCheck:
+      tcp: true
+      initialDelaySeconds: 60
+      periodSeconds: 30
 
-databases:
-  # 关键修改：将数据库类型明确指定为 MySQL
-  - name: nexusk-database
-    databaseName: nexusk
-    plan: free
-    # 添加这一行来指定使用 MySQL 8
-    engine: mysql
+    # 关键修改：所有的环境变量都已从此文件移除。
+    # 您必须在 Render 控制面板的 "Environment" 选项卡中设置以下所有的环境变量。
+    # 这种做法将配置与代码分离，更加安全和灵活。
+    #
+    # 需要设置的变量列表：
+    # - DB_HOST
+    # - DB_NAME
+    # - DB_USER
+    # - DB_PASS (建议设置为 Secret)
+    # - FORUM_URL
+    # - FLARUM_ADMIN_USER
+    # - FLARUM_ADMIN_PASS (建议设置为 Secret)
+    # - FLARUM_ADMIN_MAIL
+    # - FLARUM_TITLE
+    # - TZ
+    envVars: []
