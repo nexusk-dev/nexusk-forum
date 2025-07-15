@@ -11,7 +11,7 @@ WORKDIR /flarum/app
 # 暴露端口
 EXPOSE 8888
 
-# 创建启动脚本 - 使用echo命令逐行构建
+# 创建启动脚本 - 让Flarum自动安装
 RUN echo '#!/bin/sh' > /start.sh
 RUN echo 'set -e' >> /start.sh
 RUN echo 'echo "等待数据库连接..."' >> /start.sh
@@ -46,8 +46,6 @@ RUN echo '    echo "    ]" >> /flarum/app/config.php' >> /start.sh
 RUN echo '    echo "];" >> /flarum/app/config.php' >> /start.sh
 RUN echo '    echo "配置文件创建完成"' >> /start.sh
 RUN echo 'fi' >> /start.sh
-RUN echo 'echo "清理缓存..."' >> /start.sh
-RUN echo 'php flarum cache:clear' >> /start.sh
 RUN echo 'echo "启动论坛服务..."' >> /start.sh
 RUN echo 'cd /flarum/app/public' >> /start.sh
 RUN echo 'exec php -S 0.0.0.0:8888 -t .' >> /start.sh
