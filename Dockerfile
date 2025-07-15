@@ -12,8 +12,67 @@ WORKDIR /flarum/app
 # 暴露 Flarum 运行的端口
 EXPOSE 8888
 
-# 创建启动脚本
-RUN printf '#!/bin/sh\nset -e\n\n# 如果 DB_PORT 环境变量未设置，则默认使用 3306\nDB_PORT=${DB_PORT:-3306}\n\necho "=== NexusK Flarum 正在启动... ==="\necho "数据库主机 (DB_HOST): ${DB_HOST}"\necho "数据库端口 (DB_PORT): ${DB_PORT}"\necho "正在等待 MySQL 数据库连接..."\n\ntimeout=180\ncounter=0\nwhile ! nc -z "${DB_HOST}" "${DB_PORT}"; do\n    counter=$((counter + 1))\n    if [ ${counter} -ge ${timeout} ]; then\n        echo "错误：数据库连接超时！请检查数据库状态和网络设置。"\n        exit 1\n    fi\n    echo "数据库尚未就绪，5秒后重试..."\n    sleep 5\ndone\n\necho "数据库连接成功！"\n\nif [ ! -f "/flarum/app/config.php" ]; then\n    echo "检测到首次运行，正在安装 Flarum..."\n    \n    # 创建配置文件\n    printf "<?php return array (\\n  '\''debug'\'' => false,\\n  '\''database'\'' =>\\n  array (\\n    '\''driver'\'' => '\''mysql'\'',\\n    '\''host'\'' => '\''%s'\'',\\n    '\''port'\'' => %s,\\n    '\''database'\'' => '\''%s'\'',\\n    '\''username'\'' => '\''%s'\'',\\n    '\''password'\'' => '\''%s'\'',\\n    '\''charset'\'' => '\''utf8mb4'\'',\\n    '\''collation'\'' => '\''utf8mb4_unicode_ci'\'',\\n    '\''prefix'\'' => '\''flarum_'\'',\\n    '\''strict'\'' => false,\\n    '\''engine'\'' => '\''InnoDB'\'',\\n    '\''prefix_indexes'\'' => true,\\n  ),\\n  '\''url'\'' => '\''%s'\'',\\n  '\''paths'\'' =>\\n  array (\\n    '\''api'\'' => '\''api'\'',\\n    '\''admin'\'' => '\''admin'\'',\\n  ),\\n);" "${DB_HOST}" "${DB_PORT}" "${DB_NAME}" "${DB_USER}" "${DB_PASS}" "${FORUM_URL}" > /flarum/app/config.php\n\n    echo "config.php 创建成功。"\n    php flarum migrate --force\n    php flarum install --defaults --admin-user="${FLARUM_ADMIN_USER}" --admin-pass="${FLARUM_ADMIN_PASS}" --admin-email="${FLARUM_ADMIN_MAIL}" --title="${FLARUM_TITLE}"\n    echo "Flarum 安装完成！"\nfi\n\necho "正在清理缓存..."\nphp flarum cache:clear\n\necho "启动 Flarum 服务..."\nexec php flarum serve --host=0.0.0.0 --port=8888\n' > /start.sh && \
+# 创建启动脚本 - 使用简单的echo命令
+RUN echo '#!/bin/sh' > /start.sh && \
+    echo 'set -e' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo 'DB_PORT=${DB_PORT:-3306}' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo 'echo "=== NexusK Flarum 正在启动... ==="' >> /start.sh && \
+    echo 'echo "数据库主机: ${DB_HOST}"' >> /start.sh && \
+    echo 'echo "数据库端口: ${DB_PORT}"' >> /start.sh && \
+    echo 'echo "正在等待 MySQL 数据库连接..."' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo 'timeout=180' >> /start.sh && \
+    echo 'counter=0' >> /start.sh && \
+    echo 'while ! nc -z "${DB_HOST}" "${DB_PORT}"; do' >> /start.sh && \
+    echo '    counter=$((counter + 1))' >> /start.sh && \
+    echo '    if [ ${counter} -ge ${timeout} ]; then' >> /start.sh && \
+    echo '        echo "数据库连接超时！"' >> /start.sh && \
+    echo '        exit 1' >> /start.sh && \
+    echo '    fi' >> /start.sh && \
+    echo '    echo "等待数据库，5秒后重试..."' >> /start.sh && \
+    echo '    sleep 5' >> /start.sh && \
+    echo 'done' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo 'echo "数据库连接成功！"' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo 'if [ ! -f "/flarum/app/config.php" ]; then' >> /start.sh && \
+    echo '    echo "检测到首次运行，正在安装 Flarum..."' >> /start.sh && \
+    echo '    # 创建配置文件' >> /start.sh && \
+    echo '    echo "<?php return [" > /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "  \"debug\" => false," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "  \"database\" => [" >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"driver\" => \"mysql\"," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"host\" => \"${DB_HOST}\"," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"port\" => ${DB_PORT}," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"database\" => \"${DB_NAME}\"," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"username\" => \"${DB_USER}\"," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"password\" => \"${DB_PASS}\"," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"charset\" => \"utf8mb4\"," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"collation\" => \"utf8mb4_unicode_ci\"," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"prefix\" => \"flarum_\"," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"strict\" => false," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"engine\" => \"InnoDB\"," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"prefix_indexes\" => true" >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "  ]," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "  \"url\" => \"${FORUM_URL}\"," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "  \"paths\" => [" >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"api\" => \"api\"," >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "    \"admin\" => \"admin\"" >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "  ]" >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "];" >> /flarum/app/config.php' >> /start.sh && \
+    echo '    echo "config.php 创建成功。"' >> /start.sh && \
+    echo '    php flarum migrate --force' >> /start.sh && \
+    echo '    php flarum install --defaults --admin-user="${FLARUM_ADMIN_USER}" --admin-pass="${FLARUM_ADMIN_PASS}" --admin-email="${FLARUM_ADMIN_MAIL}" --title="${FLARUM_TITLE}"' >> /start.sh && \
+    echo '    echo "Flarum 安装完成！"' >> /start.sh && \
+    echo 'fi' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo 'echo "正在清理缓存..."' >> /start.sh && \
+    echo 'php flarum cache:clear' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo 'echo "启动 Flarum 服务..."' >> /start.sh && \
+    echo 'exec php flarum serve --host=0.0.0.0 --port=8888' >> /start.sh && \
     chmod +x /start.sh
 
 # 使用启动脚本
