@@ -1,12 +1,11 @@
-# 最终的、所有逻辑内联的 Dockerfile
 FROM mondedie/flarum:stable
 
 # 设置时区为中国
 ENV TZ=Asia/Shanghai
 
-# 关键修改：同时安装 PostgreSQL PHP 驱动 (php82-pdo_pgsql) 和 netcat
+# 关键修改：安装 PostgreSQL PHP 驱动，使用 Alpine v3.16 兼容的包名 (php8-pdo_pgsql)
 # Flarum 需要 pdo_pgsql 来连接 PostgreSQL 数据库
-RUN apk add --no-cache netcat-openbsd php82-pdo_pgsql
+RUN apk add --no-cache netcat-openbsd php8-pdo_pgsql
 
 # 设置工作目录
 WORKDIR /flarum/app
