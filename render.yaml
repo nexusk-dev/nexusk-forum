@@ -5,10 +5,6 @@ services:
     # 您的 Web 服务可以继续使用免费计划
     plan: free
     dockerfilePath: ./Dockerfile
-    healthCheck:
-      tcp: true
-      initialDelaySeconds: 60
-      periodSeconds: 30
 
     # 关键修改：所有的环境变量都已从此文件移除。
     # 您必须在 Render 控制面板的 "Environment" 选项卡中设置以下所有的环境变量。
