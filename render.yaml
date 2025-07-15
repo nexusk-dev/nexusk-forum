@@ -1,0 +1,42 @@
+# render.yaml
+services:
+  - type: web
+    name: nexusk-forum
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: FORUM_URL
+        value: https://nexusk-forum.onrender.com
+      - key: DB_HOST
+        fromDatabase:
+          name: nexusk-database
+          property: host
+      - key: DB_NAME
+        fromDatabase:
+          name: nexusk-database
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: nexusk-database
+          property: user
+      - key: DB_PASS
+        fromDatabase:
+          name: nexusk-database
+          property: password
+      - key: FLARUM_ADMIN_USER
+        value: admin
+      - key: FLARUM_ADMIN_PASS
+        value: nexusk2024
+      - key: FLARUM_ADMIN_MAIL
+        value: admin@nexusk.com
+      - key: FLARUM_TITLE
+        value: NexusK 服务器论坛
+      - key: TZ
+        value: Asia/Shanghai
+
+databases:
+  - name: nexusk-database
+    databaseName: nexusk
+    plan: free
