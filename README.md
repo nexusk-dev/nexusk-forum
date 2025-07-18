@@ -23,7 +23,7 @@ NexusK 是一个充满活力的 Minecraft 服务器社区，致力于为玩家�
 - 数据库: [![Database](https://img.shields.io/badge/database-online-brightgreen)](https://nexusk-forum.onrender.com)
 
 ## 📱 访问地址
-**论坛**: https://nexusk-forum.onrender.com
+**论坛**: https://forum.nexusk.fun
 
 ## 🎯 服务器信息
 - 服务器名称: NexusK
